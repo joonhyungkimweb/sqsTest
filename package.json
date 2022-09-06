@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build && node dist/src/app.js",
     "build": "tsc -p .",
-    "dockerbuild": "npm run build && cp -r dist/src docker && cp package.json docker && cp yarn.lock docker",
+    "dockerbuild": "npm run build && cp -r dist/src docker && cp package.json docker",
     "dev": "ts-node-dev --inspect --watch -- ./src/app.ts"
   },
   "author": "",
