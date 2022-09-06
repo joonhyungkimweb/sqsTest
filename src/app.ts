@@ -29,7 +29,7 @@ const start = async () => {
         validationSplit: params.validationSplit,
       }
     );
-    model.save(createModelSaver(params.userId, params.modelName));
+    await model.save(createModelSaver(params.userId, params.modelName));
     clearMessage();
   } catch (err) {
     console.error(err);

@@ -4,7 +4,7 @@ import { putObject } from './Storage';
 export const createModelSaver = (userId: string, modelName: string): io.IOHandler => ({
   save: async (modelArtifacts) => {
     await putObject(
-      `${userId}/models/${modelName}.json`,
+      `${userId}/trained-models/${modelName}.json`,
       JSON.stringify({
         ...modelArtifacts,
         weightsManifest: [
@@ -19,7 +19,7 @@ export const createModelSaver = (userId: string, modelName: string): io.IOHandle
 
     if (modelArtifacts.weightData != null) {
       await putObject(
-        `${userId}/models/${modelName}.weights.bin`,
+        `${userId}/trained-models/${modelName}.weights.bin`,
         Buffer.from(modelArtifacts.weightData),
         'application/octet-stream'
       );
