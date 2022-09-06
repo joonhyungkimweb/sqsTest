@@ -1,7 +1,6 @@
 import fetch from 'cross-fetch';
 
-const CALLBACK_GATEWAY =
-  'https://loh99h6rjc.execute-api.ap-northeast-2.amazonaws.com/prod/cloud-training';
+const CALLBACK_GATEWAY = process.env.CALLBACK_GATEWAY;
 
 const EC2_METADATA_API = 'http://169.254.169.254/latest/meta-data/instance-id';
 
