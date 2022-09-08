@@ -45,15 +45,21 @@ export const onTraining = (
     )
   );
 
-export const onFinish = (email: string, trainingSeq: string, filePath: string) =>
+export const onFinish = (
+  email: string,
+  trainingSeq: string,
+  modelPath: string,
+  weightsPath: string
+) =>
   client.send(
     commandUpdate(
       email,
       trainingSeq,
       'finished',
-      { '#filePath': 'filePath' },
+      { '#modelPath': 'modelPath', '#weightsPath': 'weightsPath' },
       {
-        ':filePath': { S: filePath },
+        ':modelPath': { S: modelPath },
+        ':weightsPath': { S: weightsPath },
       },
       '#filePath = :filePath'
     )
