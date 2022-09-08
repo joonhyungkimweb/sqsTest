@@ -1,4 +1,5 @@
 import { loadAndProcessCSVData } from './Modules/DataProcessor';
+import { onTraining } from './Modules/DB';
 import { getTrainingParams } from './Modules/MessagePasers';
 import { LoadModel } from './Modules/ModelLoader';
 import { createModelSaver } from './Modules/ModelSaver';
@@ -27,6 +28,18 @@ const start = async () => {
         epochs: params.epochs,
         shuffle: params.shuffle,
         validationSplit: params.validationSplit,
+        callbacks: {
+          onEpochEnd: async (epoch, logs) => {
+            await onTraining(
+              params.userId,
+              params.trainingSeq,
+              Object.entries(logs!).reduce(
+                (acc, [key, value]) => ({ ...acc, [key]: { S: `${value}` } }),
+                {}
+              )
+            );
+          },
+        },
       }
     );
     await model.save(createModelSaver(params.userId, params.trainingSeq, params.modelName));
