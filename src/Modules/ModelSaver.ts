@@ -1,10 +1,18 @@
 import { io } from '@tensorflow/tfjs-core';
+import { onFinish } from './DB';
 import { putObject } from './Storage';
 
-export const createModelSaver = (userId: string, modelName: string): io.IOHandler => ({
+export const createModelSaver = (
+  userId: string,
+  trainingSeq: string,
+  modelName: string
+): io.IOHandler => ({
   save: async (modelArtifacts) => {
+    const modelPath = `${userId}/trained-models/${modelName}.json`;
+    const weightsPath = `${userId}/trained-models/${modelName}.weights.bin`;
+
     await putObject(
-      `${userId}/trained-models/${modelName}.json`,
+      modelPath,
       JSON.stringify({
         ...modelArtifacts,
         weightsManifest: [
@@ -19,11 +27,13 @@ export const createModelSaver = (userId: string, modelName: string): io.IOHandle
 
     if (modelArtifacts.weightData != null) {
       await putObject(
-        `${userId}/trained-models/${modelName}.weights.bin`,
+        weightsPath,
         Buffer.from(modelArtifacts.weightData),
         'application/octet-stream'
       );
     }
+
+    onFinish(userId, trainingSeq, modelPath, weightsPath);
 
     return {
       modelArtifactsInfo: {
