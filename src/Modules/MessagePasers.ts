@@ -2,6 +2,7 @@ import { deleteMessage, getMessage } from './MessageQueue';
 
 interface TrainingParams {
   userId: string;
+  trainingSeq: string;
   modelName: string;
   datasetPath: string;
   modelPath: string;
