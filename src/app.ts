@@ -1,3 +1,4 @@
+import { UpdateItemCommandOutput } from '@aws-sdk/client-dynamodb';
 import { loadAndProcessCSVData } from './Modules/DataProcessor';
 import { onError, onTraining } from './Modules/DB';
 import { getTrainingParams } from './Modules/MessagePasers';
@@ -16,6 +17,7 @@ const start = async () => {
         params.yColumns
       );
       const model = await LoadModel(params.modelPath, params.weightsPath);
+      const trainingPromises: Promise<UpdateItemCommandOutput>[] = [];
       const result = await trainModel(
         trainingDataset,
         model,
@@ -30,19 +32,22 @@ const start = async () => {
           shuffle: params.shuffle,
           validationSplit: params.validationSplit,
           callbacks: {
-            onEpochEnd: async (epoch, logs) => {
-              await onTraining(
-                params.userId,
-                params.trainingSeq,
-                Object.entries(logs!).reduce(
-                  (acc, [key, value]) => ({ ...acc, [key]: { S: `${value}` } }),
-                  {}
+            onEpochEnd: (epoch, logs) => {
+              trainingPromises.push(
+                onTraining(
+                  params.userId,
+                  params.trainingSeq,
+                  Object.entries(logs!).reduce(
+                    (acc, [key, value]) => ({ ...acc, [key]: { S: `${value}` } }),
+                    {}
+                  )
                 )
               );
             },
           },
         }
       );
+      await Promise.all(trainingPromises);
       await model.save(createModelSaver(params.userId, params.trainingSeq, params.modelName));
     } catch (error) {
       let message = 'Unknown Error';

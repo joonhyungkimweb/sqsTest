@@ -33,7 +33,7 @@ export const createModelSaver = (
       );
     }
 
-    onFinish(userId, trainingSeq, modelPath, weightsPath);
+    await onFinish(userId, trainingSeq, modelPath, weightsPath);
 
     return {
       modelArtifactsInfo: {
