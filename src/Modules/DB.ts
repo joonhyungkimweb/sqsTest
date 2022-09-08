@@ -61,7 +61,7 @@ export const onFinish = (
         ':modelPath': { S: modelPath },
         ':weightsPath': { S: weightsPath },
       },
-      '#filePath = :filePath'
+      '#modelPath = :modelPath, #weightsPath = :weightsPath'
     )
   );
 
