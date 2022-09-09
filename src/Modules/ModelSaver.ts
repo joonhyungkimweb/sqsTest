@@ -1,12 +1,7 @@
 import { io } from '@tensorflow/tfjs-core';
-import { onFinish } from './DB';
 import { putObject } from './Storage';
 
-export const createModelSaver = (
-  userId: string,
-  trainingSeq: string,
-  modelName: string
-): io.IOHandler => ({
+export const createModelSaver = (userId: string, modelName: string): io.IOHandler => ({
   save: async (modelArtifacts) => {
     const modelPath = `${userId}/trained-models/${modelName}.json`;
     const weightsPath = `${userId}/trained-models/${modelName}.weights.bin`;
@@ -32,8 +27,6 @@ export const createModelSaver = (
         'application/octet-stream'
       );
     }
-
-    await onFinish(userId, trainingSeq, `${modelName}.json`, `${modelName}.weights.bin`);
 
     return {
       modelArtifactsInfo: {

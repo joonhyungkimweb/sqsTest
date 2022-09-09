@@ -1,6 +1,6 @@
 import { UpdateItemCommandOutput } from '@aws-sdk/client-dynamodb';
 import { loadAndProcessCSVData } from './Modules/DataProcessor';
-import { onError, onTraining } from './Modules/DB';
+import { onError, onFinish, onTraining } from './Modules/DB';
 import { getTrainingParams } from './Modules/MessagePasers';
 import { LoadModel } from './Modules/ModelLoader';
 import { createModelSaver } from './Modules/ModelSaver';
@@ -17,7 +17,6 @@ const start = async () => {
         params.yColumns
       );
       const model = await LoadModel(params.modelPath, params.weightsPath);
-      const trainingPromises: Promise<UpdateItemCommandOutput>[] = [];
       const result = await trainModel(
         trainingDataset,
         model,
@@ -33,22 +32,27 @@ const start = async () => {
           validationSplit: params.validationSplit,
           callbacks: {
             onEpochEnd: (epoch, logs) => {
-              trainingPromises.push(
-                onTraining(
-                  params.userId,
-                  params.trainingSeq,
-                  Object.entries(logs!).reduce(
-                    (acc, [key, value]) => ({ ...acc, [key]: { S: `${value}` } }),
-                    {}
-                  )
+              onTraining(
+                params.userId,
+                params.trainingSeq,
+                Object.entries(logs!).reduce(
+                  (acc, [key, value]) => ({ ...acc, [key]: { S: `${value}` } }),
+                  {}
                 )
+              );
+            },
+            onTrainEnd: () => {
+              onFinish(
+                params.userId,
+                params.trainingSeq,
+                `${params.modelName}.json`,
+                `${params.modelName}.weights.bin`
               );
             },
           },
         }
       );
-      await Promise.all(trainingPromises);
-      await model.save(createModelSaver(params.userId, params.trainingSeq, params.modelName));
+      await model.save(createModelSaver(params.userId, params.modelName));
     } catch (error) {
       let message = 'Unknown Error';
       if (error instanceof Error) message = error.message;
