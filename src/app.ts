@@ -31,8 +31,8 @@ const start = async () => {
           shuffle: params.shuffle,
           validationSplit: params.validationSplit,
           callbacks: {
-            onEpochEnd: (epoch, logs) => {
-              onTraining(
+            onEpochEnd: async (epoch, logs) => {
+              await onTraining(
                 params.userId,
                 params.trainingSeq,
                 Object.entries(logs!).reduce(
@@ -41,8 +41,8 @@ const start = async () => {
                 )
               );
             },
-            onTrainEnd: () => {
-              onFinish(
+            onTrainEnd: async () => {
+              await onFinish(
                 params.userId,
                 params.trainingSeq,
                 `${params.modelName}.json`,
