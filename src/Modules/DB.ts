@@ -56,12 +56,13 @@ export const onFinish = (
       email,
       trainingSeq,
       'finished',
-      { '#modelPath': 'modelPath', '#weightsPath': 'weightsPath' },
+      { '#modelPath': 'modelPath', '#weightsPath': 'weightsPath', '#finishTime': 'finishTime' },
       {
         ':modelPath': { S: modelPath },
         ':weightsPath': { S: weightsPath },
+        ':finishTime': { N: `${+new Date()}` },
       },
-      '#modelPath = :modelPath, #weightsPath = :weightsPath'
+      '#modelPath = :modelPath, #weightsPath = :weightsPath, #finishTime = :finishTime'
     )
   );
 
