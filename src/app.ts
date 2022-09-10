@@ -36,7 +36,7 @@ const start = async () => {
                 params.userId,
                 params.trainingSeq,
                 Object.entries(logs!).reduce(
-                  (acc, [key, value]) => ({ ...acc, [key]: { S: `${value}` } }),
+                  (acc, [key, value]) => ({ ...acc, [key]: { N: `${value}` } }),
                   {}
                 )
               );
