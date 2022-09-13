@@ -1,5 +1,5 @@
 import { loadAndProcessCSVData } from './Modules/DataProcessor';
-import { onError, onFinish, onTraining } from './Modules/DB';
+import { onStart, onError, onFinish, onTraining } from './Modules/DB';
 import { getInstanceId } from './Modules/GetInstanceID';
 import { getTrainingParams } from './Modules/MessagePasers';
 import { LoadModel } from './Modules/ModelLoader';
@@ -11,6 +11,7 @@ const start = async () => {
   const instanceId = await getInstanceId();
   try {
     const { params, clearMessage } = await getTrainingParams();
+    await onStart(params.userId, params.trainingSeq, instanceId);
     try {
       const trainingDataset = await loadAndProcessCSVData(
         params.datasetPath,
