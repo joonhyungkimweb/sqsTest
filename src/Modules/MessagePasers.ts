@@ -1,3 +1,4 @@
+import { DeleteMessageCommandOutput } from '@aws-sdk/client-sqs';
 import { deleteMessage, getMessage } from './MessageQueue';
 
 interface TrainingParams {
@@ -20,7 +21,7 @@ interface TrainingParams {
 
 export const getTrainingParams = async (): Promise<{
   params: TrainingParams;
-  clearMessage: () => void;
+  clearMessage: () => Promise<DeleteMessageCommandOutput>;
 }> => {
   const { Messages } = await getMessage();
   if (Messages == null) throw new Error('no Message');

@@ -56,9 +56,10 @@ const start = async () => {
     } catch (error) {
       let message = 'Unknown Error';
       if (error instanceof Error) message = error.message;
-      onError(params.userId, params.trainingSeq, message);
+      await onError(params.userId, params.trainingSeq, message);
+    } finally {
+      await clearMessage();
     }
-    clearMessage();
   } catch (err) {
     console.error(err);
     return;
