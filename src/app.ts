@@ -1,13 +1,14 @@
-import { UpdateItemCommandOutput } from '@aws-sdk/client-dynamodb';
 import { loadAndProcessCSVData } from './Modules/DataProcessor';
 import { onError, onFinish, onTraining } from './Modules/DB';
+import { getInstanceId } from './Modules/GetInstanceID';
 import { getTrainingParams } from './Modules/MessagePasers';
 import { LoadModel } from './Modules/ModelLoader';
 import { createModelSaver } from './Modules/ModelSaver';
 import { trainModel } from './Modules/ModelTrainer';
-import { terminateInstance } from './Modules/TeminatEC2';
+import { fetchDelete } from './Modules/TeminatEC2';
 
 const start = async () => {
+  const instanceId = await getInstanceId();
   try {
     const { params, clearMessage } = await getTrainingParams();
     try {
@@ -64,7 +65,7 @@ const start = async () => {
     console.error(err);
     return;
   } finally {
-    terminateInstance();
+    fetchDelete(instanceId);
   }
 };
 
