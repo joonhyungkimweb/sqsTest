@@ -1,3 +1,5 @@
+import { fetch } from 'cross-fetch';
+
 const EC2_METADATA_API = 'http://169.254.169.254/latest/meta-data/instance-id';
 
 export const getInstanceId = async (): Promise<string> => {
