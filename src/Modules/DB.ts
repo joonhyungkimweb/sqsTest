@@ -9,7 +9,7 @@ const TABLE_NAME = process.env.TABLE_NAME;
 const commandUpdate = (
   email: string,
   trainingSeq: string,
-  status: 'training' | 'finished' | 'error',
+  status: 'ready' | 'training' | 'finished' | 'error',
   keys: Record<string, string>,
   values: Record<string, AttributeValue>,
   setExpression: string
@@ -28,6 +28,18 @@ const commandUpdate = (
     ExpressionAttributeValues: { ':status': { S: status }, ...values },
     UpdateExpression: `SET #status = :status, ${setExpression}`,
   });
+
+export const onStart = (email: string, trainingSeq: string, instanceId: string) =>
+  client.send(
+    commandUpdate(
+      email,
+      trainingSeq,
+      'ready',
+      { '#instanceId': 'instanceId' },
+      { ':instanceId': { S: instanceId } },
+      '#instanceId = :instanceId'
+    )
+  );
 
 export const onTraining = (
   email: string,
