@@ -1,6 +1,6 @@
 import { LayersModel, ModelCompileArgs, ModelFitArgs, Tensor } from '@tensorflow/tfjs-node-gpu';
 
-export const trainModel = (
+export const trainModel = async (
   {
     xs,
     ys,
@@ -13,5 +13,5 @@ export const trainModel = (
   trainConfig: ModelFitArgs
 ) => {
   model.compile(compileConfig);
-  model.fit(xs, ys, trainConfig);
+  await model.fit(xs, ys, trainConfig);
 };
