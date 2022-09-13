@@ -40,6 +40,7 @@ const start = async () => {
                   {}
                 )
               );
+              await model.save(createModelSaver(params.userId, params.modelName));
             },
             onTrainEnd: async () => {
               await onFinish(
@@ -52,7 +53,6 @@ const start = async () => {
           },
         }
       );
-      await model.save(createModelSaver(params.userId, params.modelName));
     } catch (error) {
       let message = 'Unknown Error';
       if (error instanceof Error) message = error.message;
