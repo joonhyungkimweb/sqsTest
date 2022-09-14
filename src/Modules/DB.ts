@@ -44,37 +44,31 @@ export const onStart = (email: string, trainingSeq: string, instanceId: string) 
 export const onTraining = (
   email: string,
   trainingSeq: string,
-  history: Record<string, AttributeValue>
+  history: Record<string, AttributeValue>,
+  files: Record<string, AttributeValue>
 ) =>
   client.send(
     commandUpdate(
       email,
       trainingSeq,
       'training',
-      { '#history': 'history' },
-      { ':history': { L: [{ M: history }] } },
-      '#history = list_append(#history, :history)'
+      { '#history': 'history', '#files': 'files' },
+      { ':history': { L: [{ M: history }] }, ':files': { L: [{ M: files }] } },
+      '#history = list_append(#history, :history), #files = list_append(#files, :files)'
     )
   );
 
-export const onFinish = (
-  email: string,
-  trainingSeq: string,
-  modelPath: string,
-  weightsPath: string
-) =>
+export const onFinish = (email: string, trainingSeq: string) =>
   client.send(
     commandUpdate(
       email,
       trainingSeq,
       'finished',
-      { '#modelPath': 'modelPath', '#weightsPath': 'weightsPath', '#finishTime': 'finishTime' },
+      { '#finishTime': 'finishTime' },
       {
-        ':modelPath': { S: modelPath },
-        ':weightsPath': { S: weightsPath },
         ':finishTime': { N: `${+new Date()}` },
       },
-      '#modelPath = :modelPath, #weightsPath = :weightsPath, #finishTime = :finishTime'
+      '#finishTime = :finishTime'
     )
   );
 

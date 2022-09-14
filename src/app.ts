@@ -34,25 +34,30 @@ const start = async () => {
           validationSplit: params.validationSplit,
           callbacks: {
             onEpochEnd: async (epoch, logs) => {
+              const prefix = `${params.userId}/trained-models/${params.trainingSeq}`;
+              const modelFileName = `${params.modelName}-epoch${epoch}`;
+
+              await model.save(createModelSaver(prefix, modelFileName));
+
               await onTraining(
                 params.userId,
                 params.trainingSeq,
                 Object.entries(logs!).reduce(
                   (acc, [key, value]) => ({ ...acc, [key]: { N: `${value}` } }),
                   {}
-                )
-              );
-              await model.save(
-                createModelSaver(params.userId, params.trainingSeq, params.modelName, epoch)
+                ),
+                {
+                  modelPath: {
+                    S: `${prefix}/${modelFileName}.json`,
+                  },
+                  weightsPath: {
+                    S: `${prefix}/${modelFileName}.weights.bin`,
+                  },
+                }
               );
             },
             onTrainEnd: async () => {
-              await onFinish(
-                params.userId,
-                params.trainingSeq,
-                `${params.modelName}.json`,
-                `${params.modelName}.weights.bin`
-              );
+              await onFinish(params.userId, params.trainingSeq);
             },
           },
         }
