@@ -42,7 +42,9 @@ const start = async () => {
                   {}
                 )
               );
-              await model.save(createModelSaver(params.userId, params.modelName));
+              await model.save(
+                createModelSaver(params.userId, params.trainingSeq, params.modelName, epoch)
+              );
             },
             onTrainEnd: async () => {
               await onFinish(
