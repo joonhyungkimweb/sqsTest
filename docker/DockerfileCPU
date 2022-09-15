@@ -1,9 +1,0 @@
-FROM node:16
-ARG BUCKET_NAME
-ARG QUEUE_URL
-WORKDIR /usr/app
-COPY . . 
-RUN yarn --prod
-ENV BUCKET_NAME ${BUCKET_NAME}
-ENV QUEUE_URL ${QUEUE_URL} 
-CMD [ "node", "src/app.js" ]
