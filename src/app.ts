@@ -1,5 +1,5 @@
 import { loadAndProcessCSVData } from './Modules/DataProcessor';
-import { onStart, onError, onFinish, onTraining } from './Modules/DB';
+import { onError, onFinish, onTraining } from './Modules/DB';
 import { getInstanceId } from './Modules/GetInstanceID';
 import { getTrainingParams } from './Modules/MessagePasers';
 import { LoadModel } from './Modules/ModelLoader';
@@ -10,68 +10,62 @@ import { fetchDelete } from './Modules/TeminatEC2';
 const start = async () => {
   const instanceId = await getInstanceId();
   try {
-    const { params, clearMessage } = await getTrainingParams();
-    await onStart(params.userId, params.trainingSeq, instanceId);
-    try {
-      const trainingDataset = await loadAndProcessCSVData(
-        params.datasetPath,
-        params.xColumns,
-        params.yColumns
-      );
-      const model = await LoadModel(params.modelPath, params.weightsPath);
-      const result = await trainModel(
-        trainingDataset,
-        model,
-        {
-          optimizer: params.optimizer,
-          loss: params.loss,
-          metrics: params.metrics,
-        },
-        {
-          batchSize: params.batchSize,
-          epochs: params.epochs,
-          shuffle: params.shuffle,
-          validationSplit: params.validationSplit,
-          callbacks: {
-            onEpochEnd: async (epoch, logs) => {
-              const prefix = `${params.userId}/trained-models/${params.trainingSeq}`;
-              const modelFileName = `${params.modelName}-epoch${epoch}`;
+    const params = await getTrainingParams(instanceId);
 
-              await model.save(createModelSaver(prefix, modelFileName));
+    if (params == null) throw new Error('no message');
 
-              await onTraining(
-                params.userId,
-                params.trainingSeq,
-                Object.entries(logs!).reduce(
-                  (acc, [key, value]) => ({ ...acc, [key]: { N: `${value}` } }),
-                  {}
-                ),
-                {
-                  modelPath: {
-                    S: `${prefix}/${modelFileName}.json`,
-                  },
-                  weightsPath: {
-                    S: `${prefix}/${modelFileName}.weights.bin`,
-                  },
-                }
-              );
-            },
-            onTrainEnd: async () => {
-              await onFinish(params.userId, params.trainingSeq);
-            },
+    const trainingDataset = await loadAndProcessCSVData(
+      params.datasetPath,
+      params.xColumns,
+      params.yColumns
+    );
+    const model = await LoadModel(params.modelPath, params.weightsPath);
+    const result = await trainModel(
+      trainingDataset,
+      model,
+      {
+        optimizer: params.optimizer,
+        loss: params.loss,
+        metrics: params.metrics,
+      },
+      {
+        batchSize: params.batchSize,
+        epochs: params.epochs,
+        shuffle: params.shuffle,
+        validationSplit: params.validationSplit,
+        callbacks: {
+          onEpochEnd: async (epoch, logs) => {
+            const prefix = `${params.userId}/trained-models/${params.trainingSeq}`;
+            const modelFileName = `${params.modelName}-epoch${epoch}`;
+
+            await model.save(createModelSaver(prefix, modelFileName));
+
+            await onTraining(
+              instanceId,
+              Object.entries(logs!).reduce(
+                (acc, [key, value]) => ({ ...acc, [key]: { N: `${value}` } }),
+                {}
+              ),
+              {
+                modelPath: {
+                  S: `${prefix}/${modelFileName}.json`,
+                },
+                weightsPath: {
+                  S: `${prefix}/${modelFileName}.weights.bin`,
+                },
+              }
+            );
           },
-        }
-      );
-    } catch (error) {
-      let message = 'Unknown Error';
-      if (error instanceof Error) message = error.message;
-      await onError(params.userId, params.trainingSeq, message);
-    } finally {
-      await clearMessage();
-    }
-  } catch (err) {
-    console.error(err);
-    return;
+          onTrainEnd: async () => {
+            await onFinish(instanceId);
+          },
+        },
+      }
+    );
+  } catch (error) {
+    let message = 'Unknown Error';
+    if (error instanceof Error) message = error.message;
+    await onError(instanceId, message);
   } finally {
     fetchDelete(instanceId);
   }
