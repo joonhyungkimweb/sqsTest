@@ -12,7 +12,7 @@ const client = new DynamoDBClient({
 const TABLE_NAME = process.env.TABLE_NAME;
 
 const commandUpdate = (
-  instanceId: string,
+  trainingSeq: string,
   status: 'training' | 'finished' | 'error',
   keys?: Record<string, string>,
   values?: Record<string, AttributeValue>,
@@ -21,8 +21,8 @@ const commandUpdate = (
   new UpdateItemCommand({
     TableName: TABLE_NAME,
     Key: {
-      instanceId: {
-        S: instanceId,
+      trainingSeq: {
+        S: trainingSeq,
       },
     },
     ExpressionAttributeNames: { '#status': 'status', ...keys },
@@ -41,13 +41,13 @@ export const getParams = (instanceId: string) =>
   );
 
 export const onTraining = (
-  instanceId: string,
+  trainingSeq: string,
   history: Record<string, AttributeValue>,
   files: Record<string, AttributeValue>
 ) =>
   client.send(
     commandUpdate(
-      instanceId,
+      trainingSeq,
       'training',
       { '#history': 'history', '#files': 'files' },
       { ':history': { L: [{ M: history }] }, ':files': { L: [{ M: files }] } },
@@ -55,10 +55,10 @@ export const onTraining = (
     )
   );
 
-export const onFinish = (instanceId: string) =>
+export const onFinish = (trainingSeq: string) =>
   client.send(
     commandUpdate(
-      instanceId,
+      trainingSeq,
       'finished',
       { '#finishTime': 'finishTime' },
       {
@@ -68,10 +68,10 @@ export const onFinish = (instanceId: string) =>
     )
   );
 
-export const onError = (instanceId: string, errorMessage: string) =>
+export const onError = (trainingSeq: string, errorMessage: string) =>
   client.send(
     commandUpdate(
-      instanceId,
+      trainingSeq,
       'error',
       { '#errorMessage': 'errorMessage' },
       {

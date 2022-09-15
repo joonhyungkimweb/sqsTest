@@ -9,8 +9,12 @@ import { fetchDelete } from './Modules/TeminatEC2';
 
 const start = async () => {
   const instanceId = await getInstanceId();
+  let trainingSeq: string | null = null;
+
   try {
     const params = await getTrainingParams(instanceId);
+
+    trainingSeq = params.trainingSeq;
 
     if (params == null) throw new Error('no message');
 
@@ -41,7 +45,7 @@ const start = async () => {
             await model.save(createModelSaver(prefix, modelFileName));
 
             await onTraining(
-              instanceId,
+              params.trainingSeq,
               Object.entries(logs!).reduce(
                 (acc, [key, value]) => ({ ...acc, [key]: { N: `${value}` } }),
                 {}
@@ -57,7 +61,7 @@ const start = async () => {
             );
           },
           onTrainEnd: async () => {
-            await onFinish(instanceId);
+            await onFinish(params.trainingSeq);
           },
         },
       }
@@ -65,7 +69,8 @@ const start = async () => {
   } catch (error) {
     let message = 'Unknown Error';
     if (error instanceof Error) message = error.message;
-    await onError(instanceId, message);
+    if (trainingSeq == null) return;
+    await onError(trainingSeq, message);
   } finally {
     fetchDelete(instanceId);
   }
