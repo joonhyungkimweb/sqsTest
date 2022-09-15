@@ -1,4 +1,9 @@
-import { DynamoDBClient, UpdateItemCommand, AttributeValue } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBClient,
+  UpdateItemCommand,
+  AttributeValue,
+  ScanCommand,
+} from '@aws-sdk/client-dynamodb';
 
 const client = new DynamoDBClient({
   region: 'ap-northeast-2',
@@ -7,21 +12,17 @@ const client = new DynamoDBClient({
 const TABLE_NAME = process.env.TABLE_NAME;
 
 const commandUpdate = (
-  email: string,
-  trainingSeq: string,
-  status: 'ready' | 'training' | 'finished' | 'error',
-  keys: Record<string, string>,
-  values: Record<string, AttributeValue>,
-  setExpression: string
+  instanceId: string,
+  status: 'training' | 'finished' | 'error',
+  keys?: Record<string, string>,
+  values?: Record<string, AttributeValue>,
+  setExpression?: string
 ) =>
   new UpdateItemCommand({
     TableName: TABLE_NAME,
     Key: {
-      email: {
-        S: email,
-      },
-      trainingSeq: {
-        S: trainingSeq,
+      instanceId: {
+        S: instanceId,
       },
     },
     ExpressionAttributeNames: { '#status': 'status', ...keys },
@@ -29,28 +30,24 @@ const commandUpdate = (
     UpdateExpression: `SET #status = :status, ${setExpression}`,
   });
 
-export const onStart = (email: string, trainingSeq: string, instanceId: string) =>
+export const getParams = (instanceId: string) =>
   client.send(
-    commandUpdate(
-      email,
-      trainingSeq,
-      'ready',
-      { '#instanceId': 'instanceId' },
-      { ':instanceId': { S: instanceId } },
-      '#instanceId = :instanceId'
-    )
+    new ScanCommand({
+      TableName: TABLE_NAME,
+      ExpressionAttributeNames: { '#instanceId': 'instanceId' },
+      ExpressionAttributeValues: { ':instanceId': { S: instanceId } },
+      FilterExpression: '#instanceId = :instanceId',
+    })
   );
 
 export const onTraining = (
-  email: string,
-  trainingSeq: string,
+  instanceId: string,
   history: Record<string, AttributeValue>,
   files: Record<string, AttributeValue>
 ) =>
   client.send(
     commandUpdate(
-      email,
-      trainingSeq,
+      instanceId,
       'training',
       { '#history': 'history', '#files': 'files' },
       { ':history': { L: [{ M: history }] }, ':files': { L: [{ M: files }] } },
@@ -58,11 +55,10 @@ export const onTraining = (
     )
   );
 
-export const onFinish = (email: string, trainingSeq: string) =>
+export const onFinish = (instanceId: string) =>
   client.send(
     commandUpdate(
-      email,
-      trainingSeq,
+      instanceId,
       'finished',
       { '#finishTime': 'finishTime' },
       {
@@ -72,11 +68,10 @@ export const onFinish = (email: string, trainingSeq: string) =>
     )
   );
 
-export const onError = (email: string, trainingSeq: string, errorMessage: string) =>
+export const onError = (instanceId: string, errorMessage: string) =>
   client.send(
     commandUpdate(
-      email,
-      trainingSeq,
+      instanceId,
       'error',
       { '#errorMessage': 'errorMessage' },
       {
