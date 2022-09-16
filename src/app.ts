@@ -57,7 +57,8 @@ const start = async () => {
                 weightsPath: {
                   S: `${modelFileName}.weights.bin`,
                 },
-              }
+              },
+              epoch
             );
           },
           onTrainEnd: async () => {

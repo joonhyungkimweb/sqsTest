@@ -43,15 +43,20 @@ export const getParams = (instanceId: string) =>
 export const onTraining = (
   trainingSeq: string,
   history: Record<string, AttributeValue>,
-  files: Record<string, AttributeValue>
+  files: Record<string, AttributeValue>,
+  epochsDone: number
 ) =>
   client.send(
     commandUpdate(
       trainingSeq,
       'training',
-      { '#history': 'history', '#files': 'files' },
-      { ':history': { L: [{ M: history }] }, ':files': { L: [{ M: files }] } },
-      '#history = list_append(#history, :history), #files = list_append(#files, :files)'
+      { '#history': 'history', '#files': 'files', '#epochsDone': 'epochsDone' },
+      {
+        ':history': { L: [{ M: history }] },
+        ':files': { L: [{ M: files }] },
+        ':epochsDone': { N: `${epochsDone}` },
+      },
+      '#history = list_append(#history, :history), #files = list_append(#files, :files), #epochsDone = :epochsDone'
     )
   );
 
