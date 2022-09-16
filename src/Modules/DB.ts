@@ -3,6 +3,7 @@ import {
   UpdateItemCommand,
   AttributeValue,
   ScanCommand,
+  GetItemCommand,
 } from '@aws-sdk/client-dynamodb';
 
 const client = new DynamoDBClient({
@@ -39,6 +40,22 @@ export const getParams = (instanceId: string) =>
       FilterExpression: '#instanceId = :instanceId',
     })
   );
+
+export const getStatus = async (trainingSeq: string) => {
+  const { Item } = await client.send(
+    new GetItemCommand({
+      TableName: TABLE_NAME,
+      Key: {
+        trainingSeq: {
+          S: trainingSeq,
+        },
+      },
+      ProjectionExpression: '#status',
+      ExpressionAttributeNames: { '#status': 'status' },
+    })
+  );
+  return Item?.status.S;
+};
 
 export const onTraining = (
   trainingSeq: string,
