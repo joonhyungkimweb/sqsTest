@@ -58,7 +58,7 @@ const start = async () => {
                   S: `${modelFileName}.weights.bin`,
                 },
               },
-              epoch
+              epoch + 1
             );
           },
           onTrainEnd: async () => {
