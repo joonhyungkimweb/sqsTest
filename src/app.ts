@@ -1,5 +1,5 @@
 import { loadAndProcessCSVData } from './Modules/DataProcessor';
-import { onError, onFinish, onTraining } from './Modules/DB';
+import { getStatus, onError, onFinish, onTraining } from './Modules/DB';
 import { getInstanceId } from './Modules/GetInstanceID';
 import { getTrainingParams } from './Modules/MessagePasers';
 import { LoadModel } from './Modules/ModelLoader';
@@ -42,6 +42,8 @@ const start = async () => {
             const prefix = `${params.userId}/trained-models/${params.trainingSeq}`;
             const modelFileName = `${params.modelName}-epoch${epoch}`;
 
+            const currentStatus = await getStatus(trainingSeq!);
+            if (currentStatus == null || currentStatus === 'stopped') return;
             await model.save(createModelSaver(prefix, modelFileName));
 
             await onTraining(
@@ -68,6 +70,7 @@ const start = async () => {
       }
     );
   } catch (error) {
+    console.error(error);
     let message = 'Unknown Error';
     if (error instanceof Error) message = error.message;
     if (trainingSeq == null) return;
