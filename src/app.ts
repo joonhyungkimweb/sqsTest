@@ -52,10 +52,10 @@ const start = async () => {
               ),
               {
                 modelPath: {
-                  S: `${prefix}/${modelFileName}.json`,
+                  S: `${modelFileName}.json`,
                 },
                 weightsPath: {
-                  S: `${prefix}/${modelFileName}.weights.bin`,
+                  S: `${modelFileName}.weights.bin`,
                 },
               }
             );
