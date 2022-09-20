@@ -16,6 +16,7 @@ interface TrainingParams {
   shuffle: boolean;
   validationSplit: number;
   trainingSeq: string;
+  projectName: string;
 }
 
 export const getTrainingParams = async (targetId: string): Promise<TrainingParams> => {
@@ -39,6 +40,7 @@ export const getTrainingParams = async (targetId: string): Promise<TrainingParam
       optimizer: { S: optimizer },
       shuffle: { BOOL: shuffle },
       trainingSeq: { S: trainingSeq },
+      projectName: { S: projectName },
     },
   ] = Items;
 
@@ -59,5 +61,6 @@ export const getTrainingParams = async (targetId: string): Promise<TrainingParam
     shuffle: shuffle!,
     validationSplit: +validationSplit!,
     trainingSeq: trainingSeq!,
+    projectName: projectName!,
   };
 };
