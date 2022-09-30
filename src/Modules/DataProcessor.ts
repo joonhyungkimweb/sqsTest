@@ -1,6 +1,6 @@
 import { parseCsvData, UnheadedCSV } from './CSVPaser';
 import { getObject } from './Storage';
-import { tensor } from '@tensorflow/tfjs-node-gpu';
+import { tensor, util } from '@tensorflow/tfjs-node-gpu';
 
 const loadCSVDataset = async (datasetURL: string) => {
   const {
@@ -19,6 +19,7 @@ export const loadAndProcessCSVData = async (
   yColumns: number[]
 ) => {
   const data = await loadCSVDataset(datasetURL);
+  util.shuffle(data);
   const xsArray = extractColumns(data, xColumns);
   const ysArray = extractColumns(data, yColumns);
   return {
