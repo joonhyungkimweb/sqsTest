@@ -2,11 +2,12 @@ import {
   LayersModel,
   ModelCompileArgs,
   ModelFitArgs,
+  Optimizer,
   Tensor,
   train,
 } from '@tensorflow/tfjs-node-gpu';
 
-const optimizers = {
+const optimizers: { [key: string]: (learningRate: number) => Optimizer } = {
   Adam: train.adam,
   SGD: train.sgd,
   Adagrad: train.adagrad,
@@ -15,7 +16,7 @@ const optimizers = {
   RMSProp: train.rmsprop,
 };
 
-export const compileOptimizer = (optimzer: keyof typeof optimizers, learningRate: number) =>
+export const compileOptimizer = (optimzer: string, learningRate: number) =>
   optimizers[optimzer](learningRate);
 
 export const trainModel = async (

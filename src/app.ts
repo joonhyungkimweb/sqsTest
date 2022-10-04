@@ -4,7 +4,7 @@ import { getInstanceId } from './Modules/GetInstanceID';
 import { getTrainingParams } from './Modules/MessagePasers';
 import { LoadModel } from './Modules/ModelLoader';
 import { createModelSaver } from './Modules/ModelSaver';
-import { trainModel } from './Modules/ModelTrainer';
+import { compileOptimizer, trainModel } from './Modules/ModelTrainer';
 import { fetchDelete } from './Modules/TeminatEC2';
 
 const start = async () => {
@@ -28,7 +28,7 @@ const start = async () => {
       trainingDataset,
       model,
       {
-        optimizer: params.optimizer,
+        optimizer: compileOptimizer(params.optimizer, params.learningRate),
         loss: params.loss,
         metrics: params.metrics,
       },
