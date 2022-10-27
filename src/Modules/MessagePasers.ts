@@ -3,7 +3,6 @@ interface TrainingParams {
   instanceId: string;
   trainingSeq: string;
   userId: string;
-  projectName: string;
   modelName: string;
   datasetPath: string;
   modelPath: string;
@@ -28,7 +27,6 @@ export const getTrainingParams = async (targetId: string): Promise<TrainingParam
       instanceId: { S: instanceId },
       trainingSeq: { S: trainingSeq },
       userId: { S: userId },
-      projectName: { S: projectName },
       modelName: { S: modelName },
       datasetPath: { S: datasetPath },
       modelPath: { S: modelPath },
@@ -50,7 +48,6 @@ export const getTrainingParams = async (targetId: string): Promise<TrainingParam
     instanceId: instanceId!,
     trainingSeq: trainingSeq!,
     userId: userId!,
-    projectName: projectName!,
     modelName: modelName!,
     datasetPath: datasetPath!,
     modelPath: modelPath!,

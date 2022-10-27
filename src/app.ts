@@ -39,7 +39,7 @@ const start = async () => {
         validationSplit: params.validationSplit,
         callbacks: {
           onEpochEnd: async (epoch, logs) => {
-            const prefix = `${params.userId}/trained-models/${params.projectName}/${params.trainingSeq}`;
+            const prefix = `${params.userId}/trained-models/${params.modelName}/${params.trainingSeq}`;
             const modelFileName = `${params.modelName}-epoch${epoch}`;
 
             const currentStatus = await getStatus(trainingSeq!);
