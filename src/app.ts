@@ -1,83 +1,31 @@
-import { loadAndProcessCSVData } from './Modules/DataProcessor';
-import { getStatus, onError, onFinish, onTraining } from './Modules/DB';
-import { getInstanceId } from './Modules/GetInstanceID';
-import { getTrainingParams } from './Modules/MessagePasers';
-import { LoadModel } from './Modules/ModelLoader';
-import { createModelSaver } from './Modules/ModelSaver';
-import { compileOptimizer, trainModel } from './Modules/ModelTrainer';
-import { fetchDelete } from './Modules/TeminatEC2';
+import './utils/env';
+import { TfjsParametersWithDataType, TfjsRequestParameters } from './@types/TrainingParams';
+import { trainCSVModel } from './Modules/CSVTrainer';
+import { trainImageModel } from './Modules/ImageTrainer';
+import { createTrainingSession, startTrainingSession } from './Modules/APICalls';
 
-const start = async () => {
-  const instanceId = await getInstanceId();
-  let trainingSeq: string | null = null;
-
+const train = async () => {
   try {
-    const params = await getTrainingParams(instanceId);
+    const params = JSON.parse(process.env.PARAMS as string) as TfjsRequestParameters;
+    if (params.platform === 'tfjs') {
+      if (params.dataType == null || (params.dataType !== 'TEXT' && params.dataType !== 'IMAGE'))
+        throw new Error('Invalid Data type');
 
-    trainingSeq = params.trainingSeq;
+      const {
+        data: { id: trainingId },
+      } = await createTrainingSession(params);
 
-    if (params == null) throw new Error('no message');
+      await startTrainingSession(trainingId);
 
-    const trainingDataset = await loadAndProcessCSVData(
-      params.datasetPath,
-      params.xColumns,
-      params.yColumns
-    );
-    const model = await LoadModel(params.modelPath, params.weightsPath);
-    const result = await trainModel(
-      trainingDataset,
-      model,
-      {
-        optimizer: compileOptimizer(params.optimizer, params.learningRate),
-        loss: params.loss,
-        metrics: params.metrics,
-      },
-      {
-        batchSize: params.batchSize,
-        epochs: params.epochs,
-        shuffle: params.shuffle,
-        validationSplit: params.validationSplit,
-        callbacks: {
-          onEpochEnd: async (epoch, logs) => {
-            const prefix = `${params.userId}/trained-models/${params.modelName}/${params.trainingSeq}`;
-            const modelFileName = `${params.modelName}-epoch${epoch}`;
-
-            const currentStatus = await getStatus(trainingSeq!);
-            if (currentStatus == null || currentStatus === 'stopped') return;
-            await model.save(createModelSaver(prefix, modelFileName));
-
-            await onTraining(
-              params.trainingSeq,
-              Object.entries(logs!).reduce(
-                (acc, [key, value]) => ({ ...acc, [key]: { N: `${value}` } }),
-                {}
-              ),
-              {
-                modelPath: {
-                  S: `${modelFileName}.json`,
-                },
-                weightsPath: {
-                  S: `${modelFileName}.weights.bin`,
-                },
-              },
-              epoch + 1
-            );
-          },
-          onTrainEnd: async () => {
-            await onFinish(params.trainingSeq);
-          },
-        },
-      }
-    );
-  } catch (error) {
-    console.error(error);
-    let message = 'Unknown Error';
-    if (error instanceof Error) message = error.message;
-    if (trainingSeq == null) return;
-    await onError(trainingSeq, message);
-  } finally {
-    fetchDelete(instanceId);
+      if (params.dataType === 'TEXT')
+        await trainCSVModel(trainingId, params as TfjsParametersWithDataType<'TEXT'>);
+      if (params.dataType === 'IMAGE')
+        await trainImageModel(trainingId, params as TfjsParametersWithDataType<'IMAGE'>);
+      return;
+    }
+  } catch (err) {
+    console.error(err);
   }
 };
 
-start();
+train();

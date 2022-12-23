@@ -1,18 +1,16 @@
 import { io } from '@tensorflow/tfjs-core';
 import { putObject } from './Storage';
+import path from 'path';
 
-export const createModelSaver = (prefix: string, modelFileName: string): io.IOHandler => ({
+export const createModelSaver = (modelPath: string, weightsPath: string): io.IOHandler => ({
   save: async (modelArtifacts) => {
-    const modelPath = `${prefix}/${modelFileName}.json`;
-    const weightsPath = `${prefix}/${modelFileName}.weights.bin`;
-
     await putObject(
       modelPath,
       JSON.stringify({
         ...modelArtifacts,
         weightsManifest: [
           {
-            paths: [`./${modelFileName}.weights.bin`],
+            paths: [path.basename(weightsPath)],
             weights: modelArtifacts.weightSpecs,
           },
         ],
