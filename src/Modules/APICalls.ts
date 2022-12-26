@@ -5,7 +5,7 @@ import {
   TrainingResponse,
 } from '../@types/TrainingParams';
 
-const TRAINING_ENDPOINT = 'https://api.nocodingai.com/training';
+const TRAINING_ENDPOINT = 'https://api.nocodingai.com/trainingstatus';
 const STATUS_ENDPOINT = `${TRAINING_ENDPOINT}/status`;
 const EPOCH_ENDPOINT = `${TRAINING_ENDPOINT}/epoch`;
 
