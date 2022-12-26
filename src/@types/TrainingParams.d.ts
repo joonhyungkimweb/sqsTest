@@ -52,6 +52,7 @@ export interface TfjsParams extends TrainingParameters {
 
 export interface TrainingRequestParameters extends TrainingParameters {
   userId: string;
+  trainingId: number;
   platform: 'tfjs';
 }
 export interface TfjsRequestParameters extends TfjsParams, TrainingRequestParameters {
