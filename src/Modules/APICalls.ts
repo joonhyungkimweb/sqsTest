@@ -37,12 +37,6 @@ const updateTrainingStatus = async (
     body: JSON.stringify({ status, ...options }),
   });
 
-export const createTrainingSession = (TrainingParameters: TrainingParameters) =>
-  fetchWithErrorHandler<TrainingResponse>(`${TRAINING_ENDPOINT}/${TrainingParameters.modelId}`, {
-    method: 'POST',
-    body: JSON.stringify(TrainingParameters),
-  });
-
 export const startTrainingSession = (trainingId: number) =>
   updateTrainingStatus(trainingId, 'start');
 
