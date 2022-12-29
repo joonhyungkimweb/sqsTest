@@ -1,4 +1,3 @@
-import './utils/env';
 import { TfjsParametersWithDataType, TfjsRequestParameters } from './@types/TrainingParams';
 import { trainCSVModel } from './Modules/CSVTrainer';
 import { trainImageModel } from './Modules/ImageTrainer';

@@ -1,11 +1,7 @@
 import fetch from 'cross-fetch';
-import {
-  TrainingEpochParameters,
-  TrainingParameters,
-  TrainingResponse,
-} from '../@types/TrainingParams';
+import { TrainingEpochParameters } from '../@types/TrainingParams';
 
-const TRAINING_ENDPOINT = 'https://api.nocodingai.com/trainingstatus';
+const TRAINING_ENDPOINT = `${process.env.API_ENDPOINT}/trainingstatus`;
 const STATUS_ENDPOINT = `${TRAINING_ENDPOINT}/status`;
 const EPOCH_ENDPOINT = `${TRAINING_ENDPOINT}/epoch`;
 
