@@ -33,6 +33,17 @@ const updateTrainingStatus = async (
     body: JSON.stringify({ status, ...options }),
   });
 
+export const getTrainingStatus = async (trainingId: number) => {
+  const {
+    data: { trainingStatus },
+  } = await fetchWithErrorHandler(`${TRAINING_ENDPOINT}/${trainingId}`, {
+    headers: {
+      Authorization: 'testtoken',
+    },
+  });
+  return trainingStatus;
+};
+
 export const startTrainingSession = (trainingId: number) =>
   updateTrainingStatus(trainingId, 'start');
 
