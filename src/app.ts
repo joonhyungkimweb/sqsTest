@@ -1,22 +1,14 @@
-import { TfjsParametersWithDataType, TfjsRequestParameters } from './@types/TrainingParams';
-import { trainCSVModel } from './Modules/CSVTrainer';
-import { trainImageModel } from './Modules/ImageTrainer';
+import { TfjsRequestParameters } from './@types/TrainingParams';
 import { errorOnTrainingSession, startTrainingSession } from './Modules/APICalls';
+import { preprocessDataset } from './Modules/DataPreprocessor';
+import { trainModel } from './Modules/ModelTrainer';
 
 const train = async () => {
   const params = JSON.parse(process.env.PARAMS as string) as TfjsRequestParameters;
   try {
     if (params.platform === 'tfjs') {
-      if (params.dataType == null || (params.dataType !== 'TEXT' && params.dataType !== 'IMAGE'))
-        throw new Error('Invalid Data type');
-
       await startTrainingSession(params.trainingId);
-
-      if (params.dataType === 'TEXT')
-        await trainCSVModel(params as TfjsParametersWithDataType<'TEXT'>);
-      if (params.dataType === 'IMAGE')
-        await trainImageModel(params as TfjsParametersWithDataType<'IMAGE'>);
-      return;
+      await trainModel(params, await preprocessDataset(params));
     }
   } catch (error) {
     console.error(error);
