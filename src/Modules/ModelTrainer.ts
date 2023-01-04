@@ -3,6 +3,7 @@ import { LoadModel } from './ModelLoader';
 import { startTrainningProcess } from './APICalls';
 import { modelTrainingCallBacks } from './ModelTrainingCallBacks';
 import { TfjsRequestParameters } from '../@types/TrainingParams';
+import { startStatusChecker } from './StatusChecker';
 
 const optimizers: { [key: string]: (learningRate: number) => Optimizer } = {
   ADAM: train.adam,
@@ -33,6 +34,12 @@ export const trainModel = async (
     optimizer,
     loss: params.loss,
     metrics: params.metrics,
+  });
+
+  startStatusChecker(params.trainingId, (status) => {
+    const isStopped = status === 'STOPPED';
+    model.stopTraining = isStopped;
+    return isStopped;
   });
 
   await model.fit(xs, ys, {
