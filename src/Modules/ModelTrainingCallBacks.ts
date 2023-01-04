@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { finishTrainingSession, updateEpochResult } from './APICalls';
 import { createModelSaver } from './ModelSaver';
 
-export const epochEndHandler =
+const epochEndHandler =
   (trainingId: number, userId: string, model: LayersModel): CustomCallback['onEpochEnd'] =>
   async (epoch, logs) => {
     const modelPath = `${userId}/${v4()}.json`;
@@ -36,8 +36,13 @@ export const epochEndHandler =
     });
   };
 
-export const finishHandler =
+const finishHandler =
   (trainingId: number): CustomCallback['onTrainEnd'] =>
   async () => {
     await finishTrainingSession(trainingId);
   };
+
+export const modelTrainingCallBacks = (trainingId: number, userId: string, model: LayersModel) => ({
+  onEpochEnd: epochEndHandler(trainingId, userId, model),
+  onTrainEnd: finishHandler(trainingId),
+});

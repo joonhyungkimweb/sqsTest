@@ -1,10 +1,10 @@
 import { dispose } from '@tensorflow/tfjs-node-gpu';
 import { TfjsParametersWithDataType } from '../@types/TrainingParams';
-import { errorOnTrainingSession, startPreprocessing, startTrainningProcess } from './APICalls';
+import { startPreprocessing, startTrainningProcess } from './APICalls';
 import { loadAndProcessCSVData } from './DataProcessor';
 import { LoadModel } from './ModelLoader';
 import { compileOptimizer, trainModel } from './ModelTrainer';
-import { epochEndHandler, finishHandler } from './ModelTrainingCallBacks';
+import { modelTrainingCallBacks } from './ModelTrainingCallBacks';
 
 export const trainCSVModel = async (params: TfjsParametersWithDataType<'TEXT'>) => {
   await startPreprocessing(params.trainingId);
@@ -26,10 +26,7 @@ export const trainCSVModel = async (params: TfjsParametersWithDataType<'TEXT'>) 
       epochs: params.epochs,
       shuffle: params.shuffle,
       validationSplit: params.validationSplit,
-      callbacks: {
-        onEpochEnd: epochEndHandler(params.trainingId, params.userId, model),
-        onTrainEnd: finishHandler(params.trainingId),
-      },
+      callbacks: modelTrainingCallBacks(params.trainingId, params.userId, model),
     }
   );
   model.dispose();
